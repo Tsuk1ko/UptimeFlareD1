@@ -9,3 +9,7 @@ A more advanced, serverless, and free uptime monitoring & status page solution, 
 
 > [!WARNING]
 > Under testing, it is not recommended to use this project now.
+
+## Setup differences
+
+You need to add D1 edit permission when creating API Token.
