@@ -74,8 +74,8 @@ export default function Home({
           textAlign: 'center'
         }}>
           Open-source monitoring and status page powered by{' '}
-          <a href="https://github.com/lyc8503/UptimeFlare" target="_blank">
-            Uptimeflare
+          <a href="https://github.com/Tsuk1ko/UptimeFlareD1" target="_blank">
+            UptimeFlareD1
           </a>{' '}
           and{' '}
           <a href="https://www.cloudflare.com/" target="_blank">

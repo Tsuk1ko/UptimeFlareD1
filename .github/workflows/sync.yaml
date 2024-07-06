@@ -11,7 +11,7 @@ on:
         description: 'This will pull the upstream code while preserving your configuration file. Configuration file compatibility is not guaranteed, and you may need to manually update the configuration file after pulling.'
         type: boolean
         required: true
-        default: false
+        default: true
       override-token:
         description: '[Optional] Replace the default token with the supplied PAT. Used to resolve `refusing to allow a GitHub App to create or update workflow... `'
         required: false
@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: Checkout target repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ inputs.override-token || secrets.GITHUB_TOKEN }}
 
@@ -37,9 +37,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          
+
           # Fetch latest code
-          git clone https://github.com/lyc8503/UptimeFlare /tmp/latest
+          git clone https://github.com/Tsuk1ko/UptimeFlareD1 /tmp/latest --depth=1
           rm -rf /tmp/latest/.git
 
           # Clean current repo and update
@@ -49,7 +49,7 @@ jobs:
           git add .
           git commit -m "Sync latest code from upstream"
           git push
-      
+
       - name: Trigger deployment
         uses: benc-uk/workflow-dispatch@v1
         with:

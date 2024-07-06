@@ -9,18 +9,18 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2.0.3
+        uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.6.4
+          terraform_version: ^1
 
       - name: Use Node.js 18.x
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18.x
-          cache: 'npm'
+          cache: 'yarn'
 
       # Automatically get an account id via the API Token
       # if secrets.CLOUDFLARE_ACCOUNT_ID is not set.
@@ -41,7 +41,7 @@ jobs:
 
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      
+
       # This is a temporary workaround to fix issue #13
       # On a new Cloudflare account, the terraform apply will fail with `workers.api.error.subdomain_required`
       # This may be due to the account not having a worker subdomain yet, so we create a dummy worker and then delete it.
@@ -55,7 +55,7 @@ jobs:
                --header 'Authorization: Bearer '$CLOUDFLARE_API_TOKEN \
                --header 'Content-Type: application/javascript' \
                --data 'addEventListener('\''fetch'\'', (event) => event.respondWith(new Response('\''OK'\'')))'\
-          
+
           curl --request DELETE --fail-with-body \
                --url https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/dummy-ib4db6ntj5csdef3 \
                --header 'Authorization: Bearer '$CLOUDFLARE_API_TOKEN \
@@ -66,9 +66,7 @@ jobs:
 
       - name: Install packages
         run: |
-          npm install
-          cd worker
-          npm install
+          yarn install
 
       - name: Build worker
         run: |
@@ -77,7 +75,7 @@ jobs:
 
       - name: Build page
         run: |
-          npx @cloudflare/next-on-pages
+          yarn build:ci
 
       - name: Deploy using Terraform
         # We're using terraform for first-time setup here,

@@ -9,7 +9,6 @@ const NoSsr = (props: {
     | React.ReactElement<any, string | React.JSXElementConstructor<any>>
     | Iterable<React.ReactNode>
     | React.ReactPortal
-    | React.PromiseLikeOfReactNode
     | null
     | undefined
 }) => <React.Fragment>{props.children}</React.Fragment>
