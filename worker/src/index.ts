@@ -66,7 +66,9 @@ export default {
           notification.body
         )
       } else {
-        console.log(`Apprise API server or recipient URL not set, skipping apprise notification for ${monitor.name}`)
+        console.log(
+          `Apprise API server or recipient URL not set, skipping apprise notification for ${monitor.name}`
+        )
       }
     }
 
@@ -150,17 +152,14 @@ export default {
               // grace period not set OR ...
               workerConfig.notification?.gracePeriod === undefined ||
               // only when we have sent a notification for DOWN status, we will send a notification for UP status (within 30 seconds of possible drift)
-              currentTimeSecond - lastIncident.start[0] >= (workerConfig.notification.gracePeriod + 1) * 60 - 30
+              currentTimeSecond - lastIncident.start[0] >=
+                (workerConfig.notification.gracePeriod + 1) * 60 - 30
             ) {
-              await formatAndNotify(
-                monitor,
-                true,
-                lastIncident.start[0],
-                currentTimeSecond,
-                'OK'
-              )
+              await formatAndNotify(monitor, true, lastIncident.start[0], currentTimeSecond, 'OK')
             } else {
-              console.log(`grace period (${workerConfig.notification?.gracePeriod}m) not met, skipping apprise UP notification for ${monitor.name}`)
+              console.log(
+                `grace period (${workerConfig.notification?.gracePeriod}m) not met, skipping apprise UP notification for ${monitor.name}`
+              )
             }
 
             console.log('Calling config onStatusChange callback...')
@@ -201,22 +200,20 @@ export default {
         try {
           if (
             // monitor status changed AND...
-            (monitorStatusChanged && (
+            (monitorStatusChanged &&
               // grace period not set OR ...
-              workerConfig.notification?.gracePeriod === undefined ||
-              // have sent a notification for DOWN status
-              currentTimeSecond - currentIncident.start[0] >= (workerConfig.notification.gracePeriod + 1) * 60 - 30
-            ))
-            ||
-            (
-              // grace period is set AND...
-              workerConfig.notification?.gracePeriod !== undefined &&
-              (
-                // grace period is met
-                currentTimeSecond - currentIncident.start[0] >= workerConfig.notification.gracePeriod * 60 - 30 &&
-                currentTimeSecond - currentIncident.start[0] < workerConfig.notification.gracePeriod * 60 + 30
-              )
-            )) {
+              (workerConfig.notification?.gracePeriod === undefined ||
+                // have sent a notification for DOWN status
+                currentTimeSecond - currentIncident.start[0] >=
+                  (workerConfig.notification.gracePeriod + 1) * 60 - 30)) ||
+            // grace period is set AND...
+            (workerConfig.notification?.gracePeriod !== undefined &&
+              // grace period is met
+              currentTimeSecond - currentIncident.start[0] >=
+                workerConfig.notification.gracePeriod * 60 - 30 &&
+              currentTimeSecond - currentIncident.start[0] <
+                workerConfig.notification.gracePeriod * 60 + 30)
+          ) {
             await formatAndNotify(
               monitor,
               false,
@@ -225,7 +222,9 @@ export default {
               status.err
             )
           } else {
-            console.log(`Grace period (${workerConfig.notification?.gracePeriod}m) not met (currently down for ${currentTimeSecond - currentIncident.start[0]}s, changed ${monitorStatusChanged}), skipping apprise DOWN notification for ${monitor.name}`)
+            console.log(
+              `Grace period (${workerConfig.notification?.gracePeriod}m) not met (currently down for ${currentTimeSecond - currentIncident.start[0]}s, changed ${monitorStatusChanged}), skipping apprise DOWN notification for ${monitor.name}`
+            )
           }
 
           if (monitorStatusChanged) {
@@ -271,7 +270,10 @@ export default {
         time: currentTimeSecond,
       }
       latencyLists.recent.push(record)
-      if (latencyLists.all.length === 0 || currentTimeSecond - latencyLists.all.slice(-1)[0].time > 60 * 60) {
+      if (
+        latencyLists.all.length === 0 ||
+        currentTimeSecond - latencyLists.all.slice(-1)[0].time > 60 * 60
+      ) {
         latencyLists.all.push(record)
       }
 
@@ -286,40 +288,45 @@ export default {
 
       // discard old incidents
       let incidentList = state.incident[monitor.id]
-      while (incidentList.length > 0 && incidentList[0].end && incidentList[0].end < currentTimeSecond - 90 * 24 * 60 * 60) {
+      while (
+        incidentList.length > 0 &&
+        incidentList[0].end &&
+        incidentList[0].end < currentTimeSecond - 90 * 24 * 60 * 60
+      ) {
         incidentList.shift()
       }
 
-      if (incidentList.length == 0 || (
-        incidentList[0].start[0] > currentTimeSecond - 90 * 24 * 60 * 60 &&
-        incidentList[0].error[0] != 'dummy'
-      )) {
+      if (
+        incidentList.length == 0 ||
+        (incidentList[0].start[0] > currentTimeSecond - 90 * 24 * 60 * 60 &&
+          incidentList[0].error[0] != 'dummy')
+      ) {
         // put the dummy incident back
-        incidentList.unshift(
-          {
-            start: [currentTimeSecond - 90 * 24 * 60 * 60],
-            end: currentTimeSecond - 90 * 24 * 60 * 60,
-            error: ['dummy'],
-          }
-        )
+        incidentList.unshift({
+          start: [currentTimeSecond - 90 * 24 * 60 * 60],
+          end: currentTimeSecond - 90 * 24 * 60 * 60,
+          error: ['dummy'],
+        })
       }
       state.incident[monitor.id] = incidentList
 
       statusChanged ||= monitorStatusChanged
     }
 
-    console.log(`statusChanged: ${statusChanged}, lastUpdate: ${state.lastUpdate}, currentTime: ${currentTimeSecond}`)
+    console.log(
+      `statusChanged: ${statusChanged}, lastUpdate: ${state.lastUpdate}, currentTime: ${currentTimeSecond}`
+    )
     // Update state
     // Allow for a cooldown period before writing to KV
     if (
       statusChanged ||
-      currentTimeSecond - state.lastUpdate >= workerConfig.kvWriteCooldownMinutes * 60 - 10  // Allow for 10 seconds of clock drift
+      currentTimeSecond - state.lastUpdate >= workerConfig.kvWriteCooldownMinutes * 60 - 10 // Allow for 10 seconds of clock drift
     ) {
-      console.log("Updating state...")
+      console.log('Updating state...')
       state.lastUpdate = currentTimeSecond
       await env.UPTIMEFLARE_STATE.put('state', JSON.stringify(state))
     } else {
-      console.log("Skipping state update due to cooldown period.")
+      console.log('Skipping state update due to cooldown period.')
     }
   },
 }

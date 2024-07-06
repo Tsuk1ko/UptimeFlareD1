@@ -22,21 +22,17 @@ export default function Home({
   tooltip?: string
   statusPageLink?: string
 }) {
-  let state;
+  let state
   if (stateStr !== undefined) {
     state = JSON.parse(stateStr) as MonitorState
   }
 
   // Specify monitorId in URL hash to view a specific monitor (can be used in iframe)
-  const monitorId = window.location.hash.substring(1);
+  const monitorId = window.location.hash.substring(1)
   if (monitorId) {
-    const monitor = monitors.find((monitor) => monitor.id === monitorId);
+    const monitor = monitors.find((monitor) => monitor.id === monitorId)
     if (!monitor || !state) {
-      return (
-        <Text fw={700}>
-          Monitor with id {monitorId} not found!
-        </Text>
-      )
+      return <Text fw={700}>Monitor with id {monitorId} not found!</Text>
     }
     return (
       <div style={{ maxWidth: '810px' }}>
@@ -71,9 +67,13 @@ export default function Home({
         )}
 
         <Divider mt="lg" />
-        <Text size="xs" py="xs" style={{
-          textAlign: 'center'
-        }}>
+        <Text
+          size="xs"
+          py="xs"
+          style={{
+            textAlign: 'center',
+          }}
+        >
           Open-source monitoring and status page powered by{' '}
           <a href="https://github.com/Tsuk1ko/UptimeFlareD1" target="_blank">
             UptimeFlareD1
@@ -109,7 +109,7 @@ export async function getServerSideProps() {
       // @ts-ignore
       tooltip: monitor?.tooltip,
       // @ts-ignore
-      statusPageLink: monitor?.statusPageLink
+      statusPageLink: monitor?.statusPageLink,
     }
   })
 
