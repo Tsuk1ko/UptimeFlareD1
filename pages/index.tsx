@@ -70,7 +70,7 @@ export default function Home({
         )}
 
         <Divider mt="lg" />
-        <Text size="xs" mt="xs" mb="xs" style={{
+        <Text size="xs" py="xs" style={{
           textAlign: 'center'
         }}>
           Open-source monitoring and status page powered by{' '}
