@@ -6,3 +6,6 @@ A more advanced, serverless, and free uptime monitoring & status page solution, 
 > This is a fork version to use D1 instead of KV for storing data, and including some enhancements.
 >
 > More information please checkout original project: [UptimeFlare](https://github.com/lyc8503/UptimeFlare)
+
+> [!WARNING]
+> Under testing, it is not recommended to use this project now.
