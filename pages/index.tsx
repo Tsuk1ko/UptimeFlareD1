@@ -50,6 +50,7 @@ export default function Home({
       <Head>
         <title>{pageConfig.title}</title>
         <link rel="icon" href="/favicon.ico" />
+        <style type="text/css">{'a{text-decoration:none!important}'}</style>
       </Head>
 
       <main className={inter.className}>
