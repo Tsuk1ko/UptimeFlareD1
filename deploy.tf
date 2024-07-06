@@ -16,9 +16,9 @@ variable "CLOUDFLARE_ACCOUNT_ID" {
   type = string
 }
 
-resource "cloudflare_workers_kv_namespace" "uptimeflare_kv" {
+resource "cloudflare_d1_database" "uptimeflare_db" {
   account_id = var.CLOUDFLARE_ACCOUNT_ID
-  title      = "uptimeflare_kv"
+  name       = "uptimeflare-db"
 }
 
 resource "cloudflare_worker_script" "uptimeflare" {
@@ -28,9 +28,9 @@ resource "cloudflare_worker_script" "uptimeflare" {
   module             = true
   compatibility_date = "2023-11-08"
 
-  kv_namespace_binding {
-    name         = "UPTIMEFLARE_STATE"
-    namespace_id = cloudflare_workers_kv_namespace.uptimeflare_kv.id
+  d1_database_binding {
+    name        = "UPTIMEFLARE_DB"
+    database_id = cloudflare_d1_database.uptimeflare_db.id
   }
 }
 
@@ -38,7 +38,7 @@ resource "cloudflare_worker_cron_trigger" "uptimeflare_worker_cron" {
   account_id  = var.CLOUDFLARE_ACCOUNT_ID
   script_name = cloudflare_worker_script.uptimeflare.name
   schedules = [
-    "* * * * *", # every 1 minute, you can reduce the KV write by increase the worker settings of `kvWriteCooldownMinutes`
+    "* * * * *", # every 1 minute
   ]
 }
 
@@ -49,8 +49,8 @@ resource "cloudflare_pages_project" "uptimeflare" {
 
   deployment_configs {
     production {
-      kv_namespaces = {
-        UPTIMEFLARE_STATE = cloudflare_workers_kv_namespace.uptimeflare_kv.id
+      d1_databases = {
+        UPTIMEFLARE_DB = cloudflare_d1_database.uptimeflare_db.id
       }
       compatibility_date  = "2023-11-08"
       compatibility_flags = ["nodejs_compat"]

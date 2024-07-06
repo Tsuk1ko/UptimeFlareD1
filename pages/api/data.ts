@@ -1,16 +1,18 @@
 import { workerConfig } from '@/uptime.config'
 import { MonitorState } from '@/uptime.types'
+import { UptimeFlareStateDb } from '@/util/state'
 import { NextRequest } from 'next/server'
 
 export const runtime = 'edge'
 
 export default async function handler(req: NextRequest): Promise<Response> {
-  const { UPTIMEFLARE_STATE } = process.env as unknown as {
-    UPTIMEFLARE_STATE: KVNamespace
+  const { UPTIMEFLARE_DB } = process.env as unknown as {
+    UPTIMEFLARE_DB: D1Database
   }
 
-  const stateStr = await UPTIMEFLARE_STATE?.get('state')
-  if (!stateStr) {
+  const stateDb = new UptimeFlareStateDb<MonitorState>(UPTIMEFLARE_DB)
+  const state = await stateDb.get()
+  if (!state) {
     return new Response(JSON.stringify({ error: 'No data available' }), {
       status: 500,
       headers: {
@@ -18,7 +20,6 @@ export default async function handler(req: NextRequest): Promise<Response> {
       },
     })
   }
-  const state = JSON.parse(stateStr) as unknown as MonitorState
 
   let monitors: any = {}
 

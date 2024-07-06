@@ -1,4 +1,5 @@
 type MonitorState = {
+  version: number
   lastUpdate: number
   overallUp: number
   overallDown: number

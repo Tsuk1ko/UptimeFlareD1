@@ -2,9 +2,10 @@ import { workerConfig } from '../../uptime.config'
 import { formatStatusChangeNotification, getWorkerLocation, notifyWithApprise } from './util'
 import { MonitorState } from '../../uptime.types'
 import { getStatus } from './monitor'
+import { UptimeFlareStateDb } from '../../util/state'
 
 export interface Env {
-  UPTIMEFLARE_STATE: KVNamespace
+  UPTIMEFLARE_DB: D1Database
 }
 
 export default {
@@ -73,18 +74,15 @@ export default {
     }
 
     // Read state, set init state if it doesn't exist
-    let state =
-      ((await env.UPTIMEFLARE_STATE.get('state', {
-        type: 'json',
-      })) as unknown as MonitorState) ||
-      ({
-        version: 1,
-        lastUpdate: 0,
-        overallUp: 0,
-        overallDown: 0,
-        incident: {},
-        latency: {},
-      } as MonitorState)
+    const db = new UptimeFlareStateDb<MonitorState>(env.UPTIMEFLARE_DB)
+    let state: MonitorState = (await db.get()) || {
+      version: 1,
+      lastUpdate: 0,
+      overallUp: 0,
+      overallDown: 0,
+      incident: {},
+      latency: {},
+    }
     state.overallDown = 0
     state.overallUp = 0
 
@@ -316,17 +314,10 @@ export default {
     console.log(
       `statusChanged: ${statusChanged}, lastUpdate: ${state.lastUpdate}, currentTime: ${currentTimeSecond}`
     )
+
     // Update state
-    // Allow for a cooldown period before writing to KV
-    if (
-      statusChanged ||
-      currentTimeSecond - state.lastUpdate >= workerConfig.kvWriteCooldownMinutes * 60 - 10 // Allow for 10 seconds of clock drift
-    ) {
-      console.log('Updating state...')
-      state.lastUpdate = currentTimeSecond
-      await env.UPTIMEFLARE_STATE.put('state', JSON.stringify(state))
-    } else {
-      console.log('Skipping state update due to cooldown period.')
-    }
+    console.log('Updating state...')
+    state.lastUpdate = currentTimeSecond
+    await db.set(state)
   },
 }

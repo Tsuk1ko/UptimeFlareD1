@@ -6,6 +6,7 @@
     "vercel-build": "next build",
     "deploy": "wrangler deploy",
     "dev": "wrangler dev --config wrangler-dev.toml --test-scheduled --persist-to ../.wrangler/state",
+    "db:init": "wrangler d1 execute uptimeflare-db --config wrangler-dev.toml --local --file=setup.sql --persist-to ../.wrangler/state",
     "start": "wrangler dev"
   },
   "devDependencies": {

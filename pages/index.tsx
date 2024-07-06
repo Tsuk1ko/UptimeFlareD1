@@ -2,31 +2,26 @@ import Head from 'next/head'
 
 import { Inter } from 'next/font/google'
 import { MonitorState, MonitorTarget } from '@/uptime.types'
-import { KVNamespace } from '@cloudflare/workers-types'
 import { pageConfig, workerConfig } from '@/uptime.config'
 import OverallStatus from '@/components/OverallStatus'
 import Header from '@/components/Header'
 import MonitorList from '@/components/MonitorList'
 import { Center, Divider, Text } from '@mantine/core'
 import MonitorDetail from '@/components/MonitorDetail'
+import { UptimeFlareStateDb } from '@/util/state'
 
 export const runtime = 'experimental-edge'
 const inter = Inter({ subsets: ['latin'] })
 
 export default function Home({
-  state: stateStr,
+  state,
   monitors,
 }: {
-  state: string
+  state: MonitorState | null
   monitors: MonitorTarget[]
   tooltip?: string
   statusPageLink?: string
 }) {
-  let state
-  if (stateStr !== undefined) {
-    state = JSON.parse(stateStr) as MonitorState
-  }
-
   // Specify monitorId in URL hash to view a specific monitor (can be used in iframe)
   const monitorId = window.location.hash.substring(1)
   if (monitorId) {
@@ -52,10 +47,10 @@ export default function Home({
       <main className={inter.className}>
         <Header />
 
-        {state === undefined ? (
+        {!state ? (
           <Center>
             <Text fw={700}>
-              Monitor State is not defined now, please check your worker&apos;s status and KV
+              Monitor State is not defined now, please check your worker&apos;s status and D1
               binding!
             </Text>
           </Center>
@@ -94,12 +89,13 @@ export default function Home({
 }
 
 export async function getServerSideProps() {
-  const { UPTIMEFLARE_STATE } = process.env as unknown as {
-    UPTIMEFLARE_STATE: KVNamespace
+  const { UPTIMEFLARE_DB } = process.env as unknown as {
+    UPTIMEFLARE_DB: D1Database
   }
 
   // Read state as string from KV, to avoid hitting server-side cpu time limit
-  const state = (await UPTIMEFLARE_STATE?.get('state')) as unknown as MonitorState
+  const stateDb = new UptimeFlareStateDb<MonitorState>(UPTIMEFLARE_DB)
+  const state = await stateDb.get()
 
   // Only present these values to client
   const monitors = workerConfig.monitors.map((monitor) => {
