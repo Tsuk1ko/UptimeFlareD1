@@ -1,4 +1,4 @@
-type MonitorState = {
+export type MonitorState = {
   version: number
   lastUpdate: number
   overallUp: number
@@ -29,7 +29,7 @@ type MonitorState = {
   >
 }
 
-type MonitorTarget = {
+export type MonitorTarget = {
   id: string
   name: string
   method: string // "TCP_PING" or Http Method (e.g. GET, POST, OPTIONS, etc.)
@@ -46,4 +46,38 @@ type MonitorTarget = {
   responseKeyword?: string
 }
 
-export type { MonitorState, MonitorTarget }
+export type UptimeConfig = {
+  monitors: MonitorTarget[]
+  notification?: {
+    appriseApiServer?: string
+    recipientUrl?: string
+    timeZone?: string
+    gracePeriod?: number
+  }
+  callbacks?: {
+    onStatusChange?: (
+      env: any,
+      monitor: any,
+      isUp: boolean,
+      timeIncidentStart: number,
+      timeNow: number,
+      reason: string
+    ) => Promise<any>
+    onIncident?: (
+      env: any,
+      monitor: any,
+      timeIncidentStart: number,
+      timeNow: number,
+      reason: string
+    ) => Promise<any>
+  }
+}
+
+export type PageConfig = {
+  title: string
+  links: Array<{
+    link: string
+    label: string
+    highlight?: boolean
+  }>
+}
