@@ -7,9 +7,6 @@ A more advanced, serverless, and free uptime monitoring & status page solution, 
 >
 > More information please checkout original project: [UptimeFlare](https://github.com/lyc8503/UptimeFlare)
 
-> [!WARNING]
-> Under testing, it is not recommended to use this project now.
-
 ## Setup differences
 
 You need to add D1 edit permission when creating API Token.
